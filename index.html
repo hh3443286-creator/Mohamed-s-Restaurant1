@@ -1,0 +1,173 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مطعمي | اطلب أكلك</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#111;color:#fff}
+header{background:#1b1b1b;padding:24px 15px;text-align:center;border-bottom:3px solid #f5a623}
+header h1{color:#f5a623;margin:0 0 10px}
+header p{margin:8px 0;color:#ddd}
+.hero{text-align:center;padding:35px 15px;background:linear-gradient(135deg,#292018,#111)}
+.hero h2{font-size:27px;color:#ffbd59}
+.hero p{color:#ddd;line-height:1.8}
+.container{max-width:1100px;margin:auto;padding:20px}
+.section-title{color:#f5a623;text-align:center;margin:25px 0}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+.item{background:#202020;border:1px solid #383838;border-radius:14px;padding:18px;text-align:center}
+.item h3{margin:5px 0 12px}
+.item p{color:#bbb;font-size:14px;min-height:20px}
+.price{font-size:21px;color:#ffbd59;font-weight:bold;margin:12px}
+button,.btn{border:0;border-radius:8px;padding:11px 16px;background:#f5a623;color:#171717;font-weight:bold;cursor:pointer;font-size:15px}
+button:hover,.btn:hover{opacity:.85}
+.cart{background:#202020;border-radius:14px;padding:20px;margin-top:30px}
+.cart-row{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #444;padding:12px 0}
+.remove{background:#a83232;color:white;padding:7px 10px}
+.total{font-size:23px;color:#ffbd59;margin:20px 0}
+form{display:grid;gap:12px;margin-top:18px}
+input,textarea{width:100%;padding:13px;border-radius:8px;border:1px solid #555;background:#151515;color:white;font-size:16px}
+textarea{resize:vertical;min-height:75px}
+.whatsapp{background:#20b65a;color:white;width:100%;padding:15px;font-size:17px}
+footer{text-align:center;padding:25px;color:#aaa;background:#1b1b1b;margin-top:30px}
+.note{font-size:13px;color:#aaa;line-height:1.8}
+</style>
+</head>
+<body><header>
+<h1>🍔 مطعمي</h1>
+<p>أكلك المفضل لحد عندك</p>
+<p>🕒 مواعيد العمل: يوميًا من 11 صباحًا حتى 3 صباحًا</p>
+</header><section class="hero">
+<h2>الجوع ملوش وقت! 😋</h2>
+<p>اختار أكلك المفضل من المنيو وضيفه للسلة<br>وابعت طلبك مباشرة على واتساب</p>
+</section><main class="container">
+<h2 class="section-title">🍽️ المنيو</h2>
+<div class="menu" id="menu"></div><section class="cart">
+<h2 class="section-title">🛒 سلة الطلبات</h2>
+<div id="cartItems">السلة فارغة، اختار أكلك الأول</div>
+<div class="total">الإجمالي: <span id="total">0</span> جنيه</div><form id="orderForm">
+<input id="customerName" placeholder="اسمك" required>
+<input id="customerPhone" type="tel" placeholder="رقم موبايلك" required>
+<textarea id="customerAddress" placeholder="العنوان بالتفصيل" required></textarea>
+<textarea id="customerNotes" placeholder="ملاحظات إضافية (اختياري)"></textarea>
+<button type="button" class="whatsapp" onclick="sendOrder()">📲 تأكيد الطلب عبر واتساب</button>
+</form>
+<p class="note">ملحوظة: الطلب هيفتح واتساب برسالة جاهزة للمراجعة والإرسال. الأسعار تجريبية، عدّلها حسب أسعار مطعمك الفعلية.</p>
+</section>
+</main><footer>
+<p>مطعمي ❤️ شكرًا لثقتكم فينا</p>
+<p>للتواصل والطلبات: 01147194775</p>
+</footer><script>
+const WHATSAPP = "201147194775";
+
+const foods = [
+{name:"برجر لحم",price:100,desc:"برجر لحم مع الخضار والصوص"},
+{name:"برجر فراخ",price:85,desc:"فراخ مقرمشة وخبز طازج"},
+{name:"تشيز برجر",price:115,desc:"برجر لحم بالجبنة"},
+{name:"وجبة كرسبي",price:120,desc:"فراخ كرسبي مع البطاطس"},
+{name:"زنجر",price:100,desc:"ساندوتش زنجر بالصوص"},
+{name:"شاورما فراخ",price:85,desc:"شاورما فراخ بالتومية"},
+{name:"شاورما لحم",price:110,desc:"شاورما لحم بالصوص"},
+{name:"كريب فراخ",price:95,desc:"كريب فراخ بالجبنة"},
+{name:"كريب ميكس",price:120,desc:"فراخ ولحم وجبنة"},
+{name:"كريب سجق",price:100,desc:"سجق متبل وجبنة"},
+{name:"بيتزا مارجريتا",price:110,desc:"جبنة وموزاريلا وصلصة"},
+{name:"بيتزا فراخ",price:145,desc:"فراخ وجبنة وموزاريلا"},
+{name:"بيتزا ميكس",price:170,desc:"تشكيلة لحوم وجبنة"},
+{name:"مكرونة بشاميل",price:95,desc:"مكرونة بالبشاميل"},
+{name:"مكرونة بالصوص",price:65,desc:"مكرونة بصوص الطماطم"},
+{name:"بطاطس مقلية",price:35,desc:"بطاطس مقرمشة"},
+{name:"بطاطس بالجبنة",price:55,desc:"بطاطس مع الجبنة"},
+{name:"وجبة فراخ",price:160,desc:"فراخ مع الأرز والسلطة"},
+{name:"ساندوتش سجق",price:75,desc:"سجق شرقي بالتوابل"},
+{name:"وجبة عائلية",price:280,desc:"وجبة متنوعة للمشاركة"}
+];
+
+let cart = [];
+
+function renderMenu(){
+document.getElementById("menu").innerHTML = foods.map((food,i)=>`
+<div class="item">
+<h3>${food.name}</h3>
+<p>${food.desc}</p>
+<div class="price">${food.price} جنيه</div>
+<button onclick="addToCart(${i})">أضف للسلة +</button>
+</div>`).join("");
+}
+
+function addToCart(i){
+const existing=cart.find(item=>item.id===i);
+if(existing){existing.qty++;}
+else{cart.push({id:i,name:foods[i].name,price:foods[i].price,qty:1});}
+renderCart();
+}
+
+function changeQty(i,amount){
+const item=cart.find(x=>x.id===i);
+if(!item)return;
+item.qty+=amount;
+if(item.qty<=0)cart=cart.filter(x=>x.id!==i);
+renderCart();
+}
+
+function renderCart(){
+const box=document.getElementById("cartItems");
+if(!cart.length){
+box.textContent="السلة فارغة، اختار أكلك الأول";
+}else{
+box.innerHTML=cart.map(item=>`
+<div class="cart-row">
+<div>${item.name}<br><small>${item.price} جنيه × ${item.qty}</small></div>
+<div>
+<button onclick="changeQty(${item.id},-1)">−</button>
+<span>${item.qty}</span>
+<button onclick="changeQty(${item.id},1)">+</button>
+</div>
+</div>`).join("");
+}
+document.getElementById("total").textContent=
+cart.reduce((sum,item)=>sum+item.price*item.qty,0);
+}
+
+function sendOrder(){
+if(!cart.length){
+alert("ضيف صنف واحد على الأقل للسلة");
+return;
+}
+
+const name=document.getElementById("customerName").value.trim();
+const phone=document.getElementById("customerPhone").value.trim();
+const address=document.getElementById("customerAddress").value.trim();
+const notes=document.getElementById("customerNotes").value.trim();
+
+if(!name||!phone||!address){
+alert("من فضلك اكتب الاسم ورقم الموبايل والعنوان");
+return;
+}
+
+const total=cart.reduce((sum,item)=>sum+item.price*item.qty,0);
+let message="🍔 *طلب جديد من مطعمي*%0A";
+message+="━━━━━━━━━━━━━━%0A";
+message+="👤 الاسم: "+encodeURIComponent(name)+"%0A";
+message+="📞 رقم العميل: "+encodeURIComponent(phone)+"%0A";
+message+="📍 العنوان: "+encodeURIComponent(address)+"%0A";
+message+="━━━━━━━━━━━━━━%0A";
+message+="🍽️ *تفاصيل الطلب:*%0A";
+
+cart.forEach(item=>{
+message+=encodeURIComponent(item.name)+" × "+item.qty+
+" = "+(item.price*item.qty)+" جنيه%0A";
+});
+
+message+="━━━━━━━━━━━━━━%0A";
+message+="💰 الإجمالي: "+total+" جنيه%0A";
+if(notes)message+="📝 ملاحظات: "+encodeURIComponent(notes)+"%0A";
+message+="%0Aالرجاء تأكيد الطلب ووقت التوصيل.";
+
+window.open("https://wa.me/"+WHATSAPP+"?text="+message,"_blank");
+}
+
+renderMenu();
+renderCart();
+</script></body>
+</html>
